@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Tamil Nadu Weather Map</title>
+
+<!-- Leaflet CSS -->
+<link rel="stylesheet"
+href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+
+<style>
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+    font-family:Arial, sans-serif;
+}
+
+body{
+    background:linear-gradient(135deg,#dbeafe,#f1f5f9);
+    text-align:center;
+}
+
+/* Header */
+header{
+    background:#0f172a;
+    color:white;
+    padding:15px;
+    font-size:22px;
+    font-weight:bold;
+}
+
+/* Map */
+#map{
+    height:500px;
+    width:92%;
+    margin:25px auto;
+    border-radius:15px;
+    box-shadow:0 10px 25px rgba(0,0,0,0.3);
+}
+
+footer{
+    background:#0f172a;
+    color:white;
+    padding:10px;
+}
+</style>
+</head>
+
+<body>
+
+<header>
+🌦 Tamil Nadu Live Weather Map (Click Anywhere)
+</header>
+
+<div id="map"></div>
+
+<footer>
+Click any location to view live weather
+</footer>
+
+
+<!-- Leaflet JS -->
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+<script>
+
+/* ================= CREATE MAP ================= */
+
+// Center of Tamil Nadu
+var map = L.map('map').setView([11.1271, 78.6569], 7);
+
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution:'© OpenStreetMap'
+}).addTo(map);
+
+var currentMarker;
+
+
+/* ================= CLICK EVENT ================= */
+
+map.on('click', function(e){
+
+    var lat = e.latlng.lat;
+    var lon = e.latlng.lng;
+
+    // remove old marker
+    if(currentMarker){
+        map.removeLayer(currentMarker);
+    }
+
+    // Weather API call (Open-Meteo)
+    fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current_weather=true`)
+    .then(res => res.json())
+    .then(data => {
+
+        var w = data.current_weather;
+
+        currentMarker = L.marker([lat, lon]).addTo(map);
+
+        currentMarker.bindPopup(`
+            📍 <b>Location</b><br>
+            Lat: ${lat.toFixed(3)}<br>
+            Lon: ${lon.toFixed(3)}<br><br>
+
+            🌡 <b>Temperature:</b> ${w.temperature} °C<br>
+            💨 <b>Wind Speed:</b> ${w.windspeed} km/h<br>
+            🧭 <b>Wind Direction:</b> ${w.winddirection}°<br>
+            ⏰ <b>Time:</b> ${w.time}
+        `).openPopup();
+
+    });
+
+});
+
+</script>
+
+</body>
+</html>
